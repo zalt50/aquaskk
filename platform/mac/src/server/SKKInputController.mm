@@ -61,6 +61,8 @@
 
         session_->AddInputModeListener(new MacInputModeMenu(menu_));
         session_->AddInputModeListener(modeIcon_);
+
+        inputMenu_ = nil;
     }
 
     return self;
@@ -73,6 +75,7 @@
     [client_ release];
     [menu_ release];
     [proxy_ release];
+    [inputMenu_ release];
     [super dealloc];
 }
 
@@ -104,7 +107,7 @@
 // IMKStateSetting
 - (void)activateServer:(id)sender {
     [NSUserDefaults resetStandardUserDefaults];
-    
+
     if([self directMode]) return;
 
     [self debug:@"activateServer"];
@@ -173,56 +176,56 @@
 
 // IMKInputController
 - (NSMenu*)menu {
-    struct {
-        const char* title;
-        SEL handler;
-        SEL state;
-    } items[] = {
-        { "環境設定",                 @selector(showPreferences:),   0 },
-        { "直接入力モード",           @selector(toggleDirectMode:),  @selector(directMode) },
-        { "プライベートモード",       @selector(togglePrivateMode:), @selector(privateMode) },
-        { "設定ファイルの再読み込み", @selector(reloadComponents:),  0 },
+    if(inputMenu_ == nil) {
+        struct {
+            const char* title;
+            SEL handler;
+            SEL state;
+        } items[] = {
+            { "環境設定",                 @selector(showPreferences:),   0 },
+            { "直接入力モード",           @selector(toggleDirectMode:),  @selector(directMode) },
+            { "プライベートモード",       @selector(togglePrivateMode:), @selector(privateMode) },
+            { "設定ファイルの再読み込み", @selector(reloadComponents:),  0 },
 #ifdef SKK_DEBUG
-        { "デバッグ情報",             @selector(showDebugInfo:),     0 },
+            { "デバッグ情報",             @selector(showDebugInfo:),     0 },
 #endif
-        { "separator",                0,                             0 },
-        { "Web::日本語を快適に",      @selector(webHome:),           0 },
-        { "Web::SourceForge.JP",      @selector(webSourceForge:),    0 },
-        { "Web::Wiki",                @selector(webWiki:),           0 },
-        { 0,                          0,                             0 }
-    };
+            { "separator",                0,                             0 },
+            { "Web::日本語を快適に",      @selector(webHome:),           0 },
+            { "Web::SourceForge.JP",      @selector(webSourceForge:),    0 },
+            { "Web::Wiki",                @selector(webWiki:),           0 },
+            { 0,                          0,                             0 }
+        };
 
-    NSMenu* inputMenu = [[[NSMenu alloc] initWithTitle:@"AquaSKK"] autorelease];
+        inputMenu_ = [[NSMenu alloc] initWithTitle:@"AquaSKK"];
 
-    for(int i = 0; items[i].title != 0; ++ i) {
-        NSString* title = [NSString stringWithUTF8String:items[i].title];
-        SEL handler = items[i].handler;
-        NSMenuItem* item;
+        for(int i = 0; items[i].title != 0; ++ i) {
+            NSString* title = [NSString stringWithUTF8String:items[i].title];
+            SEL handler = items[i].handler;
+            NSMenuItem* item;
 
-        if(handler != 0) {
-            item = [[NSMenuItem alloc] initWithTitle:title
-                                              action:handler
-                                       keyEquivalent:@""];
-            [item autorelease];
-        } else {
-            item = [NSMenuItem separatorItem];
-        }
-        
-        if(items[i].state != 0) {
-            [item setState:(NSInteger)[self performSelector:items[i].state]];
-
-            if(items[i].state == @selector(directMode)) {
-                NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
-                NSString* path = [workspace absolutePathForAppBundleWithIdentifier:[client_ bundleIdentifier]];
-                NSString* name = [[NSFileManager defaultManager] displayNameAtPath:path];
-                [item setTitle:[NSString stringWithFormat:@"“%@” では直接入力", name]];
+            if(handler != 0) {
+                item = [[NSMenuItem alloc] initWithTitle:title
+                                                  action:handler
+                                           keyEquivalent:@""];
+            } else {
+                item = [NSMenuItem separatorItem];
             }
+
+            if(items[i].state != 0) {
+                [item setState:(NSInteger)[self performSelector:items[i].state]];
+
+                if(items[i].state == @selector(directMode)) {
+                    NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
+                    NSString* path = [workspace absolutePathForAppBundleWithIdentifier:[client_ bundleIdentifier]];
+                    NSString* name = [[NSFileManager defaultManager] displayNameAtPath:path];
+                    [item setTitle:[NSString stringWithFormat:@"“%@” では直接入力", name]];
+                }
+            }
+
+            [inputMenu_ addItem:item];
         }
-
-        [inputMenu addItem:item];
     }
-
-    return inputMenu;
+    return inputMenu_;
 }
 
 // handling menu items

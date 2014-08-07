@@ -41,6 +41,7 @@ class MacInputModeWindow;
     SKKLayoutManager* layout_;
     SKKInputSession* session_;
     MacInputModeWindow* modeIcon_;
+    NSMenu* inputMenu_;
 }
 @end
 
