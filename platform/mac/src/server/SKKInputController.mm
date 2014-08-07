@@ -210,19 +210,21 @@
             } else {
                 item = [NSMenuItem separatorItem];
             }
-
-            if(items[i].state != 0) {
-                [item setState:(NSInteger)[self performSelector:items[i].state]];
-
-                if(items[i].state == @selector(directMode)) {
-                    NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
-                    NSString* path = [workspace absolutePathForAppBundleWithIdentifier:[client_ bundleIdentifier]];
-                    NSString* name = [[NSFileManager defaultManager] displayNameAtPath:path];
-                    [item setTitle:[NSString stringWithFormat:@"“%@” では直接入力", name]];
-                }
-            }
-
             [inputMenu_ addItem:item];
+        }
+    }
+
+    for(int i = 0; items[i].title != 0; ++ i){
+      NSMenuItem* item = [inputMenu_ itemAtIndex: i];
+        if(items[i].state != 0) {
+            [item setState:(NSInteger)[self performSelector:items[i].state]];
+
+            if(items[i].state == @selector(directMode)) {
+                NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
+                NSString* path = [workspace absolutePathForAppBundleWithIdentifier:[client_ bundleIdentifier]];
+                NSString* name = [[NSFileManager defaultManager] displayNameAtPath:path];
+                [item setTitle:[NSString stringWithFormat:@"“%@” では直接入力", name]];
+            }
         }
     }
     return inputMenu_;
