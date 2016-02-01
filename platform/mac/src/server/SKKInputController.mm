@@ -384,6 +384,9 @@
        [[bundle objectForInfoDictionaryKey:@"CFBundleVersion"] hasPrefix:@"15."]) {
         return YES;
     }
+    if([[bundle bundleIdentifier] hasPrefix:@"org.keepassx.keepassx"]) {
+        return YES;
+    }
     return NO;
 }
 
